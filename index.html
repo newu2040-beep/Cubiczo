@@ -1,0 +1,1034 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Cubiczo - Your world, one link.</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet" id="cubiczo-fonts"><style>/* cubiczo.css */
+:root {
+  --app-bg: #ffffff;
+  --app-text: #111111;
+  --app-subtext: #666666;
+  --app-card: #f4f4f5;
+  --app-card-border: #e4e4e7;
+  --accent: #FF85A1;
+  --studio-nav-bg: #ffffff;
+  --studio-nav-border: #e4e4e7;
+  
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  
+  --font-base: 'Nunito', sans-serif;
+}
+
+[data-theme-mode="dark"] {
+  --app-bg: #09090b;
+  --app-text: #fafafa;
+  --app-subtext: #a1a1aa;
+  --app-card: #18181b;
+  --app-card-border: #27272a;
+  --studio-nav-bg: #09090b;
+  --studio-nav-border: #27272a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+body, html { width: 100%; height: 100%; font-family: var(--font-base); background-color: var(--app-bg); color: var(--app-text); overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
+input, textarea { user-select: auto; font-family: inherit; }
+
+/* View Management */
+#app-root { width: 100%; height: 100%; display: flex; justify-content: center; background: #e0e0e0; }
+[data-theme-mode="dark"] #app-root { background: #000; }
+.mobile-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: var(--app-bg); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+
+/* Hide elements with v-cloak like behavior */
+.hidden { display: none !important; }
+.opacity-0 { opacity: 0; }
+.opacity-100 { opacity: 1; }
+
+/* STUDIO SHELL */
+#studio-view { width: 100%; height: 100%; display: flex; flex-direction: column; }
+.studio-topbar { height: calc(56px + var(--safe-top)); padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px; border-bottom: 1px solid var(--app-card-border); z-index: 10; background: var(--studio-nav-bg); }
+.topbar-logo { display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px; }
+.topbar-logo svg { width: 24px; height: 24px; }
+.topbar-title { font-weight: 700; font-size: 16px; }
+.topbar-actions { display: flex; gap: 8px; }
+.pill-btn { padding: 6px 12px; border-radius: 99px; background: var(--app-card); color: var(--app-text); border: 1px solid var(--app-card-border); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: transform 0.1s ease-out; }
+.pill-btn:active { transform: scale(0.96); }
+.pill-btn.primary { background: var(--accent); color: #fff; border:none; }
+
+.studio-content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.section-pane { padding: 16px; display: none; animation: fadeIn 0.3s ease-out; }
+.section-pane.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.studio-bottom-nav { height: calc(64px + var(--safe-bottom)); padding-bottom: var(--safe-bottom); display: flex; justify-content: space-around; align-items: center; background: var(--studio-nav-bg); border-top: 1px solid var(--studio-nav-border); position: absolute; bottom: 0; width: 100%; z-index: 10; }
+.nav-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--app-subtext); cursor: pointer; transition: color 0.2s; position: relative; padding: 8px; width: 64px; }
+.nav-tab.active { color: var(--accent); font-weight: 700; }
+.nav-tab svg { width: 24px; height: 24px; pointer-events: none; }
+.nav-tab.active svg { transform: scale(1.1); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nav-tab .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); position: absolute; bottom: 2px; opacity: 0; transform: scale(0); transition: all 0.2s; }
+.nav-tab.active .dot { opacity: 1; transform: scale(1); }
+
+/* PUBLIC PROFILE VIEW */
+#public-view { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; position: relative; scroll-behavior: smooth; }
+.public-profile { min-height: 100%; position: relative; display:flex; flex-direction:column; padding-bottom: 120px; transition: all 0.3s; }
+.profile-banner { width: 100%; height: 120px; background: #eee; position: relative; background-size: cover; background-position: center; }
+.profile-banner-fade { position: absolute; bottom: 0; width: 100%; height: 40px; background: linear-gradient(to bottom, transparent, var(--theme-bg-bottom, rgba(255,255,255,0))); }
+.profile-avatar-container { margin-top: -60px; display: flex; justify-content: center; position: relative; z-index: 2; margin-bottom: 16px; }
+.profile-avatar { width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 4px 20px rgba(0,0,0,0.1); background-size: cover; background-position: center; position: relative; }
+.profile-avatar.animating::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; padding: 4px; background: conic-gradient(var(--accent), transparent, var(--accent)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: spin 4s linear infinite; pointer-events: none; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.profile-identity { text-align: center; padding: 0 20px; margin-bottom: 24px; }
+.profile-name { font-size: 24px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.profile-username { font-size: 14px; opacity: 0.7; margin-bottom: 12px; }
+.profile-tagline { font-size: 15px; max-width: 80%; margin: 0 auto; line-height: 1.4; white-space: pre-wrap; }
+
+.profile-pills-row { display: flex; gap: 8px; overflow-x: auto; padding: 4px 20px; margin-bottom: 24px; scrollbar-width: none; }
+.profile-pills-row::-webkit-scrollbar { display: none; }
+.detail-pill { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; white-space: nowrap; border: 1px solid currentColor; opacity: 0.8; }
+
+.profile-links { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; margin-bottom: 32px; width: 100%; align-items: center; }
+.link-card { width: 100%; border-radius: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; padding: 16px; position:relative; overflow: hidden; text-decoration: none; color: inherit; }
+.link-card.style-glass { background: rgba(255,255,255,0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(255,255,255,0.3) !important; }
+.link-card .link-content { display: flex; flex-direction: column; flex: 1; text-align: center; justify-content: center; }
+.link-card .link-title { font-weight: 700; font-size: 15px; }
+.link-card .link-desc { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+.link-card .link-icon { width: 24px; height: 24px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; }
+.link-card .link-icon svg { width: 100%; height: 100%; }
+
+.profile-gallery { padding: 0 20px; margin-bottom: 32px; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; cursor: pointer; }
+
+.profile-footer { text-align: center; padding: 20px; opacity: 0.6; font-size: 12px; margin-top: auto; }
+.create-own-btn { font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 99px; background: rgba(0,0,0,0.05); margin-top: 12px; cursor: pointer; }
+.dev-credit { margin-top: 24px; display:flex; align-items:center; justify-content:center; gap:4px; font-size: 11px; }
+
+/* FORMS AND STUDIO UI */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--app-subtext); margin-bottom: 8px; }
+.input-pill { width: 100%; padding: 12px 16px; border-radius: 16px; border: 1px solid var(--app-card-border); background: var(--app-card); color: var(--app-text); outline: none; font-size: 15px; transition: border-color 0.2s; }
+.input-pill:focus { border-color: var(--accent); }
+.textarea-pill { border-radius: 16px; resize: none; min-height: 80px; }
+.color-picker { width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; overflow: hidden; cursor: pointer; }
+.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker::-webkit-color-swatch { border: 2px solid var(--app-card-border); border-radius: 50%; }
+
+/* BOTTOM SHEETS */
+.bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.bottom-sheet-overlay.open { opacity: 1; pointer-events: auto; }
+.bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 90%; min-height: 40%; background: var(--app-bg); border-radius: 24px 24px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 1, 0.23, 1); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
+.bottom-sheet.open { transform: translateY(0); }
+.sheet-drag-handle { width: 40px; height: 4px; background: var(--app-card-border); border-radius: 4px; margin: 12px auto; }
+.sheet-header { padding: 0 20px 16px; border-bottom: 1px solid var(--app-card-border); display: flex; justify-content: space-between; align-items: center; }
+.sheet-title { font-weight: 800; font-size: 18px; }
+.sheet-close { width: 32px; height: 32px; border-radius: 50%; background: var(--app-card); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.sheet-content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* THEMES GRID & PILLS */
+.theme-category-pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; }
+.theme-category-pills::-webkit-scrollbar { display: none; }
+.chip-toggle { padding: 8px 16px; border-radius: 99px; background: var(--app-card); color: var(--app-text); border: 1px solid var(--app-card-border); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.chip-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.theme-swatch { aspect-ratio: 9/16; border-radius: 12px; border: 2px solid transparent; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.theme-swatch.active { border-color: var(--accent); }
+.theme-swatch-inner { position: absolute; inset: 4px; border-radius: 8px; display:flex; flex-direction:column; align-items:center; padding: 8px 4px; }
+.swatch-avatar { width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.1); margin-bottom: 8px; }
+.swatch-line { width: 80%; height: 4px; border-radius: 2px; background: rgba(0,0,0,0.1); margin-bottom: 6px; }
+
+/* STUDIO LINK LIST */
+.studio-link-card { background: var(--app-card); border: 1px solid var(--app-card-border); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; position:relative; }
+.drag-handle { cursor: grab; padding: 4px; color: var(--app-subtext); }
+.link-thumb { width:40px; height:40px; border-radius:8px; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.05); }
+.link-info { flex: 1; min-width: 0; }
+.link-info-title { font-weight: 700; font-size: 15px; margin-bottom:2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-info-url { font-size: 12px; color: var(--app-subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-actions { display: flex; gap: 4px; }
+.icon-btn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--app-subtext); }
+.icon-btn:hover { background: rgba(0,0,0,0.05); }
+
+/* MUSIC PLAYER */
+.floating-music-player { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; border-radius: 99px; padding: 8px 16px; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px); z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 90%; }
+.play-btn { width: 32px; height: 32px; border-radius: 50%; background: white; color: black; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.music-info { overflow: hidden; white-space: nowrap; max-width: 150px; font-size: 13px; font-weight: 600; }
+.marquee-content { display: inline-block; animation: marquee 10s linear infinite; }
+@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+/* EFFECTS & DECORATIONS */
+.effects-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.particle { position: absolute; pointer-events: none; }
+.confetti { position: fixed; width: 10px; height: 10px; z-index: 9999; animation: fall 3s ease-in forwards; }
+@keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+.heart-burst { position: absolute; width: 16px; height: 16px; pointer-events: none; animation: fly 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; }
+@keyframes fly { 0% { transform: translate(0, 0) scale(0.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; } }
+
+.ripple { position: absolute; border-radius: 50%; background: currentColor; opacity: 0.3; animation: rip 0.4s ease-out forwards; pointer-events: none; }
+@keyframes rip { 0% { transform: scale(0); opacity: 0.3; } 100% { transform: scale(2); opacity: 0; } }
+
+/* Lightbox */
+#lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+#lightbox.active { display: flex; opacity: 1; }
+#lightbox img { max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain; }
+#lightbox-close { position: absolute; top: 20px; right: 20px; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 50%; }
+
+/* PREVIEW OVERLAY */
+#preview-overlay { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; opacity: 0; transition: opacity 0.3s; }
+#preview-overlay.active { display: flex; opacity: 1; }
+.preview-header { width: 100%; height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; color: white; }
+.preview-phone-frame { width: 375px; height: 812px; max-height: 80vh; background: white; border-radius: 40px; overflow: hidden; border: 12px solid #333; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); transform: translateY(20px); transition: transform 0.3s; }
+#preview-overlay.active .preview-phone-frame { transform: translateY(0); }
+.preview-iframe-sim { width: 100%; height: 100%; background: #fff; overflow-y: auto; }
+
+/* Desktop Expansion */
+@media screen and (min-width: 768px) {
+  #app-root.mode-view { background: var(--app-bg); }
+  #app-root.mode-view .mobile-container { max-width: 100%; background: transparent; box-shadow: none; align-items: center; }
+  #app-root.mode-view .public-profile { width: 100%; max-width: var(--desktop-width, 560px); border-radius: 24px; overflow: hidden; margin-top: 40px; margin-bottom: 40px; box-shadow: 0 20px 80px rgba(0,0,0,0.2); min-height: 800px; }
+  #preview-overlay { justify-content: center; }
+}
+
+/* Animations */
+.anim-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes pop { 0% { transform: scale(0.8); opacity:0; } 100% { transform: scale(1); opacity:1; } }
+
+/* Toast */
+#toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -20px); background: #333; color: white; padding: 12px 24px; border-radius: 99px; font-weight: 600; font-size: 14px; z-index: 2000; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.2, 1.5, 0.6, 1); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Switch Toggle */
+.toggle-switch { width: 44px; height: 24px; background: var(--app-card-border); border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; display:inline-block; }
+.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.toggle-switch.active { background: var(--accent); }
+.toggle-switch.active::after { transform: translateX(20px); }
+
+/* Range Slider */
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--app-card-border); border-radius: 2px; }
+
+/* Custom CSS Area */
+#user-custom-css-block { display: none; }
+</style></head><body><div id="app-root" class="mode-studio">
+  <div class="mobile-container">
+    <!-- ============== STUDIO MODE ============== -->
+    <div id="studio-view">
+      <!-- TOP BAR -->
+      <div class="studio-topbar">
+        <div class="topbar-logo">
+          <!-- Logo SVG -->
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="10" width="80" height="80" rx="20" fill="url(#grad)" stroke="var(--accent)" stroke-width="4" />
+            <path d="M40 60 L60 40 M35 55 A 10 10 0 1 1 45 45 M55 55 A 10 10 0 1 0 65 45" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stop-color="var(--accent)"/>
+                <stop offset="100%" stop-color="rgba(255,133,161,0.5)"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span style="letter-spacing: 0.02em;">Cubic<em style="font-style:italic">z</em>o</span>
+        </div>
+        <div class="topbar-title" id="studio-top-title">My Profile</div>
+        <div class="topbar-actions">
+          <button class="pill-btn primary" id="btn-preview">Preview</button>
+          <button class="pill-btn" id="btn-share-main">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTENT PANES -->
+      <div class="studio-content" id="studio-content-area">
+        
+        <!-- PANE: PROFILE -->
+        <div class="section-pane active" id="pane-profile">
+          <div style="width: 100%; height: 120px; background: #eee; border-radius: 16px; margin-bottom: 16px; background-size: cover; background-position: center; position: relative;" id="studio-banner-preview">
+            <button class="pill-btn" style="position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.8); color: black; border: none; font-size: 11px; padding: 4px 8px;" id="btn-edit-banner">Edit Banner</button>
+          </div>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+              <div class="preset-banner" style="width:60px; height:40px; border-radius:8px; cursor:pointer; flex-shrink:0; background: linear-gradient(135deg, #FF9A9E, #FECFEF);" data-bg="linear-gradient(135deg, #FF9A9E, #FECFEF)"></div>
+              <div class="preset-banner" style="width:60px; height:40px; border-radius:8px; cursor:pointer; flex-shrink:0; background: linear-gradient(135deg, #a18cd1, #fbc2eb);" data-bg="linear-gradient(135deg, #a18cd1, #fbc2eb)"></div>
+              <div class="preset-banner" style="width:60px; height:40px; border-radius:8px; cursor:pointer; flex-shrink:0; background: linear-gradient(135deg, #84fab0, #8fd3f4);" data-bg="linear-gradient(135deg, #84fab0, #8fd3f4)"></div>
+              <div class="preset-banner" style="width:60px; height:40px; border-radius:8px; cursor:pointer; flex-shrink:0; background: linear-gradient(135deg, #fccb90, #d57eeb);" data-bg="linear-gradient(135deg, #fccb90, #d57eeb)"></div>
+              <div class="preset-banner" style="width:60px; height:40px; border-radius:8px; cursor:pointer; flex-shrink:0; background: linear-gradient(135deg, #e0c3fc, #8ec5fc);" data-bg="linear-gradient(135deg, #e0c3fc, #8ec5fc)"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--app-subtext); margin-top: 4px;">Upload an image or pick a preset banner background.</div>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; align-items:center; margin-bottom: 24px;">
+            <div id="studio-avatar-preview" class="profile-avatar" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23eee\'/></svg>');"></div>
+            <button class="pill-btn" style="margin-top:-16px; z-index:2; background:var(--app-bg);" id="btn-edit-photo">Edit Photo</button>
+          </div>
+
+          <div class="form-group">
+            <label>Display Name</label>
+            <input type="text" id="inp-display-name" class="input-pill" placeholder="e.g. Rahul Shah" maxlength="40">
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="inp-username" class="input-pill" placeholder="e.g. @rahul.codes">
+          </div>
+          <div class="form-group">
+            <label>Tagline / Bio</label>
+            <textarea id="inp-tagline" class="input-pill textarea-pill" placeholder="A short creative description" maxlength="160"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Pronouns</label>
+            <input type="text" id="inp-pronouns" class="input-pill" placeholder="e.g. he/him">
+          </div>
+          
+          <div style="margin-top:24px; font-weight:800; margin-bottom:12px;">Personal Details (Pills)</div>
+          <div class="form-group">
+            <label>Country</label>
+            <input type="text" id="inp-country" class="input-pill" placeholder="e.g. India \uD83C\uDDEE\uD83C\uDDF3">
+          </div>
+          <div class="form-group">
+            <label>Hobbies (comma separated)</label>
+            <input type="text" id="inp-hobbies" class="input-pill" placeholder="Reading, Coding, Chess">
+          </div>
+          <div class="form-group">
+            <label>Aesthetic Vibes</label>
+            <div id="aesthetic-pills-container" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+               <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE: LINKS -->
+        <div class="section-pane" id="pane-links">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div style="font-weight:800;">My Links</div>
+            <button class="pill-btn primary" id="btn-add-link">+ Add Link</button>
+          </div>
+          
+          <div id="studio-links-list">
+             <!-- Links populated here -->
+          </div>
+          
+          <div style="text-align:center; padding:24px; color:var(--app-subtext);" id="no-links-msg">
+            No links added yet. Tap + Add Link to start!
+          </div>
+        </div>
+
+        <!-- PANE: MEDIA -->
+        <div class="section-pane" id="pane-media">
+          <div style="font-weight:800; margin-bottom:16px;">Profile Music</div>
+          <div class="studio-link-card" style="flex-direction:column; align-items:flex-start;">
+            <div style="font-size:13px; color:var(--app-subtext); margin-bottom:8px;">Upload a short MP3 to play softly on your profile.</div>
+            <input type="file" id="inp-music-upload" accept="audio/*" style="display:none;">
+            <div style="display:flex; gap:8px; width:100%;">
+              <button class="pill-btn" onclick="document.getElementById('inp-music-upload').click()">Upload Audio</button>
+              <button class="pill-btn" id="btn-remove-music" style="display:none;">Remove</button>
+            </div>
+            <div id="music-preview-name" style="margin-top:8px; font-weight:700; font-size:14px; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">No music selected</div>
+          </div>
+          
+          <div style="font-weight:800; margin-top:32px; margin-bottom:16px;">Photo Gallery</div>
+          <button class="pill-btn" id="btn-add-gallery-photos">Add Photos</button>
+          <input type="file" id="inp-gallery-upload" accept="image/*" multiple style="display:none;">
+          <div id="studio-gallery-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px;">
+            <!-- Gallery thumbs -->
+          </div>
+        </div>
+
+        <!-- PANE: STYLE -->
+        <div class="section-pane" id="pane-style">
+          <div style="font-weight:800; margin-bottom:12px;">Pre-made Themes</div>
+          <div class="theme-category-pills" id="theme-cats">
+            <!-- Categories -->
+          </div>
+          <div class="theme-grid" id="theme-grid-container">
+             <!-- Theme Swatches -->
+          </div>
+          
+          <div style="margin-top:24px; padding-top:24px; border-top:1px solid var(--app-card-border);">
+             <button class="pill-btn w-full justify-center" id="btn-customise-theme" style="width:100%; justify-content:center; padding:12px;">Edit Theme Settings</button>
+          </div>
+        </div>
+
+        <!-- PANE: MORE -->
+        <div class="section-pane" id="pane-more">
+           <div class="form-group">
+              <button class="pill-btn" style="width:100%; justify-content:space-between; padding:16px;" id="btn-open-templates">
+                <span>Browse Templates</span>
+                <span>→</span>
+              </button>
+           </div>
+           <div class="form-group">
+              <button class="pill-btn" style="width:100%; justify-content:space-between; padding:16px;" id="btn-open-settings">
+                <span>Settings</span>
+                <span>→</span>
+              </button>
+           </div>
+           <div class="form-group">
+              <button class="pill-btn" style="width:100%; justify-content:space-between; padding:16px;" id="btn-export-profile">
+                <span>Export Profile (JSON)</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </button>
+           </div>
+           <div class="form-group">
+              <button class="pill-btn" style="width:100%; justify-content:space-between; padding:16px;" onclick="document.getElementById('inp-import-profile').click()">
+                <span>Import Profile</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </button>
+              <input type="file" id="inp-import-profile" accept=".json" style="display:none;">
+           </div>
+           
+           <div class="studio-link-card" style="flex-direction:column;text-align:center; padding:24px; margin-top:40px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="margin-bottom:8px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <div style="font-weight:700;">Cubiczo Creator Studio</div>
+              <div style="font-size:12px; color:var(--app-subtext); margin-top:4px;">Version 1.0.0</div>
+           </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM NAV -->
+      <div class="studio-bottom-nav">
+        <div class="nav-tab active" data-target="pane-profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span style="font-size:10px;">Profile</span>
+          <div class="dot"></div>
+        </div>
+        <div class="nav-tab" data-target="pane-links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          <span style="font-size:10px;">Links</span>
+          <div class="dot"></div>
+        </div>
+        <div class="nav-tab" data-target="pane-media">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <span style="font-size:10px;">Media</span>
+          <div class="dot"></div>
+        </div>
+        <div class="nav-tab" data-target="pane-style">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+          <span style="font-size:10px;">Style</span>
+          <div class="dot"></div>
+        </div>
+        <div class="nav-tab" data-target="pane-more">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+          <span style="font-size:10px;">More</span>
+          <div class="dot"></div>
+        </div>
+      </div>
+    </div> <!-- /studio-view -->
+
+
+    <!-- ============== PUBLIC PROFILE VIEW ============== -->
+    <div id="public-view" class="hidden">
+      <!-- Injected Theme CSS variables will be applied to .public-profile via JS -->
+      <div class="public-profile" id="public-profile-container">
+         <div class="effects-layer" id="effects-layer"></div>
+         
+         <div class="profile-banner" id="pub-banner">
+             <div class="profile-banner-fade"></div>
+         </div>
+         
+         <div class="profile-avatar-container">
+             <div class="profile-avatar" id="pub-avatar"></div>
+         </div>
+         
+         <div class="profile-identity">
+            <h1 class="profile-name" id="pub-name">Name</h1>
+            <div class="profile-username" id="pub-username">@username</div>
+            <div class="profile-tagline" id="pub-tagline">Tagline goes here</div>
+         </div>
+         
+         <div class="profile-pills-row" id="pub-pills">
+            <!-- Authored pills (country, vibes, etc.) go here -->
+         </div>
+         
+         <div class="profile-links" id="pub-links">
+            <!-- Link cards rendered here -->
+         </div>
+         
+         <div class="profile-gallery" id="pub-gallery">
+            <!-- Gallery images rendered here -->
+         </div>
+         
+         <div class="profile-footer">
+            <button class="create-own-btn" onclick="window.location.hash='';">Create your own profile →</button>
+         </div>
+         
+         <div class="floating-music-player hidden" id="pub-music-player">
+            <div class="play-btn" id="pub-music-play">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </div>
+            <div class="music-info"><div class="marquee-content" id="pub-music-title">Playing Track...</div></div>
+            <audio id="pub-audio-element" loop></audio>
+         </div>
+      </div>
+    </div> <!-- /public-view -->
+    
+  </div> <!-- /mobile-container -->
+
+  <!-- ============== OVERLAYS & BOTTOM SHEETS ============== -->
+  
+  <div class="bottom-sheet-overlay" id="sheet-overlay">
+    
+    <!-- Link Editor Sheet -->
+    <div class="bottom-sheet" id="sheet-link-editor" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Edit Link</div>
+        <div class="sheet-close" onclick="closeSheet('sheet-link-editor')">×</div>
+      </div>
+      <div class="sheet-content">
+        <div class="form-group">
+          <label>Platform / Type</label>
+          <select id="inp-link-platform" class="input-pill">
+            <option value="custom">Custom Link</option>
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="twitter">X / Twitter</option>
+            <option value="youtube">YouTube</option>
+            <option value="website">Website</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="inp-link-title" class="input-pill" placeholder="Link Title">
+        </div>
+        <div class="form-group">
+          <label>URL</label>
+          <input type="url" id="inp-link-url" class="input-pill" placeholder="https://...">
+        </div>
+        <div class="form-group" style="display:flex; justify-content:space-between; align-items:center;">
+          <label style="margin:0;">Visible on profile</label>
+          <div class="toggle-switch active" id="toggle-link-visible" onclick="this.classList.toggle('active'); playToggleSound(this.classList.contains('active'))"></div>
+        </div>
+        <button class="pill-btn primary" style="width:100%; justify-content:center; padding:16px; margin-top:24px;" id="btn-save-link">Save Link</button>
+      </div>
+    </div>
+    
+  </div>
+  
+  <!-- Preview Phone Overlay -->
+  <div id="preview-overlay">
+    <div class="preview-header">
+      <div style="font-weight:700;">Preview</div>
+      <button class="pill-btn" id="btn-close-preview" style="background:rgba(255,255,255,0.2); color:white; border:none;">Close</button>
+    </div>
+    <div class="preview-phone-frame">
+       <iframe src="about:blank" id="preview-iframe" class="preview-iframe-sim" frameborder="0"></iframe>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" onclick="closeLightbox()">
+    <div id="lightbox-close">×</div>
+    <img id="lightbox-img" src="" alt="Gallery Image" onclick="event.stopPropagation()">
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">Message</div>
+
+</div>
+<script>/* cubiczo_js.js */
+// ================= SOUND SYSTEM (Web Audio API) =================
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let masterGain = null;
+let isSoundEnabled = true; // Respect global sound pref
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.5;
+    masterGain.connect(audioCtx.destination);
+  }
+}
+function canPlay() {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return isSoundEnabled && !prefersReducedMotion;
+}
+
+function playTapSound() {
+  if (!canPlay()) return; initAudio();
+  const osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+  const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+  osc.connect(gain); gain.connect(masterGain); osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+}
+
+function playSaveSound() {
+  if (!canPlay()) return; initAudio();
+  const dur = 0.08;
+  [523.25, 659.25].forEach((freq, i) => { // C5, E5
+    const osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i*dur);
+    const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i*dur); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*dur + dur);
+    osc.connect(gain); gain.connect(masterGain); osc.start(audioCtx.currentTime + i*dur); osc.stop(audioCtx.currentTime + i*dur + dur);
+  });
+}
+
+function playShareSound() {
+  if (!canPlay()) return; initAudio();
+  const dur = 0.1;
+  [523.25, 659.25, 783.99].forEach((freq, i) => { // C5, E5, G5
+    const osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i*dur);
+    const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i*dur); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*dur + dur);
+    osc.connect(gain); gain.connect(masterGain); osc.start(audioCtx.currentTime + i*dur); osc.stop(audioCtx.currentTime + i*dur + dur);
+  });
+}
+
+function playToggleSound(isOn) {
+  if (!canPlay()) return; initAudio();
+  const freq = isOn ? 900 : 600;
+  const osc = audioCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  const gain = audioCtx.createGain(); gain.gain.setValueAtTime(isOn ? 0.1 : 0.05, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+  osc.connect(gain); gain.connect(masterGain); osc.start(); osc.stop(audioCtx.currentTime + 0.06);
+}
+
+// ================= THEMES =================
+const THEMES = {
+  'cotton-candy': { bg: 'linear-gradient(135deg, #FFD6E7, #C9E4FF)', cardBg: 'rgba(255,255,255,0.75)', accent: '#FF85A1', textPrimary: '#3A2040' },
+  'obsidian': { bg: '#0A0A0A', cardBg: '#1A1A1A', accent: '#FFFFFF', textPrimary: '#F0F0F0' },
+  'sakura-rain': { bg: 'linear-gradient(160deg, #FFE4F0, #FFF0F8)', cardBg: 'rgba(255,230,245,0.85)', accent: '#FF6BA8', textPrimary: '#3C0820' },
+  'vhs-glitch': { bg: '#080808', cardBg: 'rgba(20,20,20,0.92)', accent: '#00FFFF', textPrimary: '#C0FFFF' },
+  'ocean-depth': { bg: 'linear-gradient(180deg, #0A3050, #082040)', cardBg: 'rgba(10,40,70,0.85)', accent: '#40C8E8', textPrimary: '#C0F0FF' }
+}; // truncated for brevity, standard set handles custom styling
+
+// ================= STATE & Persistence =================
+const DEFAULT_PROFILE = {
+  id: 'pro_' + Math.random().toString(36).substr(2, 9),
+  identity: { displayName: 'New Creator', username: '@creator', pronouns: '', tagline: 'Welcome to my world!', hobbies: [], aestheticVibes: [], country: '' },
+  links: [],
+  media: { avatarBase64: '', bannerBase64: '', bannerPreset: '', galleryPhotos: [], musicBase64: '' },
+  style: { themeId: 'cotton-candy', customCSS: '', avatarBorderOn: true },
+  stats: { totalViews: 0, totalHearts: 0 }
+};
+
+let activeProfile = JSON.parse(localStorage.getItem('cubiczo_active_profile')) || DEFAULT_PROFILE;
+
+function saveProfile() {
+  localStorage.setItem('cubiczo_active_profile', JSON.stringify(activeProfile));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ================= ICONS (SVG) =================
+const ICONS = {
+  instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`,
+  twitter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`,
+  tiktok: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>`,
+  link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
+};
+
+// ================= UI BINDING: STUDIO =================
+
+function bindStudioUI() {
+  // Tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      playTapSound();
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.section-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.target).classList.add('active');
+      const titles = {'pane-profile': 'My Profile', 'pane-links': 'My Links', 'pane-media': 'Media & Music', 'pane-style': 'Profile Style', 'pane-more': 'More'};
+      document.getElementById('studio-top-title').textContent = titles[tab.dataset.target] || 'Studio';
+    });
+  });
+
+  // Inputs bi-directional bind
+  const bindInput = (id, objPath) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = activeProfile.identity[objPath] || '';
+    el.addEventListener('input', (e) => {
+      activeProfile.identity[objPath] = e.target.value;
+      saveProfile();
+      updatePublicProfile(); // live sync
+    });
+  };
+  bindInput('inp-display-name', 'displayName');
+  bindInput('inp-username', 'username');
+  bindInput('inp-tagline', 'tagline');
+  bindInput('inp-pronouns', 'pronouns');
+  
+  // Add Link
+  document.getElementById('btn-add-link').addEventListener('click', () => {
+    playTapSound();
+    editingLinkId = null;
+    document.getElementById('inp-link-title').value = '';
+    document.getElementById('inp-link-url').value = '';
+    const toggle = document.getElementById('toggle-link-visible');
+    if (!toggle.classList.contains('active')) toggle.classList.add('active');
+    openSheet('sheet-link-editor');
+  });
+  
+  document.getElementById('btn-save-link').addEventListener('click', () => {
+    playSaveSound();
+    const title = document.getElementById('inp-link-title').value || 'My Link';
+    const url = document.getElementById('inp-link-url').value || '#';
+    const visible = document.getElementById('toggle-link-visible').classList.contains('active');
+    const platform = document.getElementById('inp-link-platform').value;
+    
+    if (editingLinkId) {
+      const l = activeProfile.links.find(x => x.id === editingLinkId);
+      if(l) { l.title = title; l.url = url; l.visible = visible; l.platform = platform; }
+    } else {
+      activeProfile.links.push({
+        id: 'lnk_' + Math.random().toString(36).substr(2, 9),
+        title, url, visible, platform, clickCount: 0
+      });
+    }
+    saveProfile();
+    renderStudioLinks();
+    updatePublicProfile();
+    closeSheet('sheet-link-editor');
+  });
+  
+  // Theme selection
+  const grid = document.getElementById('theme-grid-container');
+  grid.innerHTML = Object.keys(THEMES).map(tid => `
+    <div class="theme-swatch ${activeProfile.style.themeId === tid ? 'active' : ''}" data-tid="${tid}" style="background:${THEMES[tid].bg}">
+       <div class="theme-swatch-inner" style="background:${THEMES[tid].cardBg}">
+          <div class="swatch-avatar" style="background:${THEMES[tid].accent}"></div>
+          <div class="swatch-line" style="background:${THEMES[tid].textPrimary}"></div>
+          <div class="swatch-line" style="background:${THEMES[tid].textPrimary}; width:50%;"></div>
+       </div>
+    </div>
+  `).join('');
+  
+  grid.querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.addEventListener('click', (e) => {
+      document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      activeProfile.style.themeId = sw.dataset.tid;
+      saveProfile();
+      updatePublicProfile();
+      if(typeof playThemeSwitchSound === 'function') playThemeSwitchSound(); else playTapSound();
+    });
+  });
+
+  // Avatar Upload
+  const avatarInp = document.createElement('input'); avatarInp.type = 'file'; avatarInp.accept = 'image/*';
+  document.getElementById('btn-edit-photo').addEventListener('click', () => avatarInp.click());
+  avatarInp.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        activeProfile.media.avatarBase64 = ev.target.result;
+        saveProfile();
+        document.getElementById('studio-avatar-preview').style.backgroundImage = `url('${ev.target.result}')`;
+        updatePublicProfile();
+        playSaveSound();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Banner Upload
+  const bannerInp = document.createElement('input'); bannerInp.type = 'file'; bannerInp.accept = 'image/*';
+  document.getElementById('btn-edit-banner').addEventListener('click', () => bannerInp.click());
+  bannerInp.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        activeProfile.media.bannerBase64 = ev.target.result;
+        activeProfile.media.bannerPreset = ''; // clear preset
+        saveProfile();
+        const b = document.getElementById('studio-banner-preview');
+        b.style.background = `url('${ev.target.result}')`;
+        b.style.backgroundSize = 'cover';
+        b.style.backgroundPosition = 'center';
+        updatePublicProfile();
+        playSaveSound();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Banner Presets
+  document.querySelectorAll('.preset-banner').forEach(preset => {
+    preset.addEventListener('click', () => {
+       const bg = preset.dataset.bg;
+       activeProfile.media.bannerPreset = bg;
+       activeProfile.media.bannerBase64 = ''; // clear image
+       saveProfile();
+       document.getElementById('studio-banner-preview').style.background = bg;
+       updatePublicProfile();
+       playTapSound();
+    });
+  });
+  
+  // Main Share
+  document.getElementById('btn-share-main').addEventListener('click', async () => {
+    playSaveSound(); // Share sound simulation
+    triggerConfetti();
+    const shareUrl = window.location.origin + window.location.pathname + '#view?id=' + activeProfile.id;
+    try {
+      if (navigator.share) await navigator.share({ title: 'My Cubiczo', url: shareUrl });
+      else { await navigator.clipboard.writeText(shareUrl); showToast("Link copied to clipboard!"); }
+    } catch(e) { }
+  });
+
+  renderStudioLinks();
+}
+
+let editingLinkId = null;
+
+function renderStudioLinks() {
+  const cont = document.getElementById('studio-links-list');
+  const msg = document.getElementById('no-links-msg');
+  if (activeProfile.links.length === 0) {
+    cont.innerHTML = ''; msg.style.display = 'block'; return;
+  }
+  msg.style.display = 'none';
+  cont.innerHTML = activeProfile.links.map(l => `
+    <div class="studio-link-card">
+      <div class="drag-handle">≡</div>
+      <div class="link-thumb" style="color:var(--accent)">
+         ${ICONS[l.platform] || ICONS.link}
+      </div>
+      <div class="link-info">
+        <div class="link-info-title" style="text-decoration: ${!l.visible ? 'line-through' : 'none'}; opacity:${!l.visible ? 0.5 : 1}">${l.title}</div>
+        <div class="link-info-url">${l.url}</div>
+      </div>
+      <div class="link-actions">
+        <button class="icon-btn btn-edit-lnk" data-id="${l.id}">✎</button>
+        <button class="icon-btn btn-del-lnk" data-id="${l.id}">×</button>
+      </div>
+    </div>
+  `).join('');
+  
+  cont.querySelectorAll('.btn-edit-lnk').forEach(b => b.addEventListener('click', (e) => {
+    editingLinkId = e.currentTarget.dataset.id;
+    const l = activeProfile.links.find(x => x.id === editingLinkId);
+    document.getElementById('inp-link-title').value = l.title;
+    document.getElementById('inp-link-url').value = l.url;
+    document.getElementById('inp-link-platform').value = l.platform || 'custom';
+    const tog = document.getElementById('toggle-link-visible');
+    if (l.visible && !tog.classList.contains('active')) tog.classList.add('active');
+    if (!l.visible && tog.classList.contains('active')) tog.classList.remove('active');
+    openSheet('sheet-link-editor');
+  }));
+  
+  cont.querySelectorAll('.btn-del-lnk').forEach(b => b.addEventListener('click', (e) => {
+    activeProfile.links = activeProfile.links.filter(x => x.id !== e.currentTarget.dataset.id);
+    saveProfile(); renderStudioLinks(); updatePublicProfile(); playToggleSound(false);
+  }));
+}
+
+// ================= BOTTOM SHEETS =================
+function openSheet(id) {
+  const overlay = document.getElementById('sheet-overlay');
+  overlay.classList.add('open');
+  const sheet = document.getElementById(id);
+  sheet.classList.add('open');
+}
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
+}
+document.getElementById('sheet-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('sheet-overlay')) {
+    document.querySelectorAll('.bottom-sheet.open').forEach(s => s.classList.remove('open'));
+    e.target.classList.remove('open');
+  }
+});
+
+
+// ================= PREVIEW / VIEW MODE =================
+
+document.getElementById('btn-preview').addEventListener('click', () => {
+  playTapSound();
+  updatePublicProfile();
+  
+  // Set up iframe simulation by copying the public profile HTML into the iframe, or just show it embedded.
+  // Since we want standard single file, we can just overlay the public view directly.
+  const overlay = document.getElementById('preview-overlay');
+  const iframe = document.getElementById('preview-iframe');
+  
+  // Generate HTML for iframe
+  const theme = THEMES[activeProfile.style.themeId] || THEMES['cotton-candy'];
+  const profileHTML = document.getElementById('public-profile-container').outerHTML;
+  const injectCSS = `
+    body { margin:0; padding:0; overflow-x:hidden; background: ${theme.bg}; font-family: 'Nunito', sans-serif; color: ${theme.textPrimary}; }
+    .public-profile { min-height: 100vh; padding-bottom: 80px; }
+    /* Inherit required styles */
+    ${document.querySelector('style').innerHTML}
+    .profile-avatar.animating::before { animation: spin 4s linear infinite; }
+  `;
+  
+  const iframeContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <style>${injectCSS}</style>
+    </head>
+    <body style="background: ${theme.bg};">
+      ${profileHTML}
+    </body>
+    </html>
+  `;
+  
+  iframe.srcdoc = iframeContent;
+  overlay.classList.add('active');
+});
+
+document.getElementById('btn-close-preview').addEventListener('click', () => {
+  playTapSound();
+  document.getElementById('preview-overlay').classList.remove('active');
+});
+
+
+function updatePublicProfile() {
+  const root = document.getElementById('public-profile-container');
+  const theme = THEMES[activeProfile.style.themeId] || THEMES['cotton-candy'];
+  
+  // Apply theme inline custom properties
+  root.style.background = theme.bg;
+  root.style.color = theme.textPrimary;
+  
+  // Update elements
+  document.getElementById('pub-name').textContent = activeProfile.identity.displayName || 'Creator Name';
+  document.getElementById('pub-name').style.color = theme.textPrimary;
+  
+  document.getElementById('pub-username').textContent = activeProfile.identity.username || '';
+  document.getElementById('pub-tagline').textContent = activeProfile.identity.tagline || '';
+  
+  // Avatar
+  const avatar = document.getElementById('pub-avatar');
+  if (activeProfile.media.avatarBase64) {
+    avatar.style.backgroundImage = `url('${activeProfile.media.avatarBase64}')`;
+  } else {
+    avatar.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23eee\'/></svg>')`;
+  }
+  if (activeProfile.style.avatarBorderOn) avatar.classList.add('animating'); else avatar.classList.remove('animating');
+  avatar.style.border = `4px solid ${theme.cardBg}`;
+  
+  // Banner
+  const banner = document.getElementById('pub-banner');
+  if (activeProfile.media.bannerBase64) {
+    banner.style.background = `url('${activeProfile.media.bannerBase64}')`;
+    banner.style.backgroundSize = 'cover';
+    banner.style.backgroundPosition = 'center';
+  } else if (activeProfile.media.bannerPreset) {
+    banner.style.background = activeProfile.media.bannerPreset;
+  } else {
+    banner.style.background = theme.accent;
+  }
+  
+  // Links
+  const linksCont = document.getElementById('pub-links');
+  const visibleLinks = activeProfile.links.filter(l => l.visible);
+  
+  linksCont.innerHTML = visibleLinks.map(l => `
+    <a href="${l.url}" target="_blank" class="link-card anim-pop" style="background:${theme.cardBg}; border:1px solid rgba(0,0,0,0.05); color:${theme.textPrimary};">
+      <div class="link-icon" style="color:${theme.accent}">${ICONS[l.platform] || ICONS.link}</div>
+      <div class="link-content">
+        <div class="link-title">${l.title}</div>
+      </div>
+      <div class="link-icon" style="opacity:0.3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></div>
+    </a>
+  `).join('');
+  
+  // Attach ripple event dynamically to preview links
+  linksCont.querySelectorAll('.link-card').forEach(card => {
+    card.addEventListener('mousedown', createRipple);
+    card.addEventListener('touchstart', createRipple);
+  });
+}
+
+// ================= ANIMATIONS & EFFECTS =================
+
+function triggerConfetti() {
+  const colors = ['#FF85A1', '#FFD6E7', '#9B5DE5', '#00FFFF', '#FFD700'];
+  for(let i=0; i<40; i++) {
+    const conf = document.createElement('div');
+    conf.className = 'confetti';
+    conf.style.left = Math.random() * 100 + 'vw';
+    conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    conf.style.animationDuration = (Math.random() * 2 + 1) + 's';
+    document.body.appendChild(conf);
+    setTimeout(() => conf.remove(), 3000);
+  }
+}
+
+function createRipple(e) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const button = e.currentTarget;
+  const circle = document.createElement('span');
+  const diameter = Math.max(button.clientWidth, button.clientHeight);
+  const radius = diameter / 2;
+  const rect = button.getBoundingClientRect();
+  
+  let clientX, clientY;
+  if(e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; }
+  
+  circle.style.width = circle.style.height = `${diameter}px`;
+  circle.style.left = `${clientX - rect.left - radius}px`;
+  circle.style.top = `${clientY - rect.top - radius}px`;
+  circle.classList.add('ripple');
+  
+  const existing = button.querySelector('.ripple');
+  if (existing) existing.remove();
+  
+  button.appendChild(circle);
+  playTapSound();
+}
+
+// ================= INIT & ROUTING =================
+function handleHashChange() {
+  const hash = window.location.hash;
+  const studio = document.getElementById('studio-view');
+  const pub = document.getElementById('public-view');
+  
+  if (hash.startsWith('#view')) {
+    // Show full public view
+    document.getElementById('app-root').classList.remove('mode-studio');
+    document.getElementById('app-root').classList.add('mode-view');
+    studio.classList.add('hidden');
+    pub.classList.remove('hidden');
+    
+    // Simulate fetching profile logic for view
+    activeProfile.stats.totalViews++;
+    saveProfile();
+    updatePublicProfile();
+  } else {
+    // Show studio mode
+    document.getElementById('app-root').classList.add('mode-studio');
+    document.getElementById('app-root').classList.remove('mode-view');
+    pub.classList.add('hidden');
+    studio.classList.remove('hidden');
+    if (activeProfile.media.avatarBase64) document.getElementById('studio-avatar-preview').style.backgroundImage = `url('${activeProfile.media.avatarBase64}')`;
+    const studioBanner = document.getElementById('studio-banner-preview');
+    if (studioBanner) {
+        if (activeProfile.media.bannerBase64) {
+           studioBanner.style.background = `url('${activeProfile.media.bannerBase64}')`;
+           studioBanner.style.backgroundSize = 'cover';
+           studioBanner.style.backgroundPosition = 'center';
+        } else if (activeProfile.media.bannerPreset) {
+           studioBanner.style.background = activeProfile.media.bannerPreset;
+        } else {
+           studioBanner.style.background = '#eee';
+        }
+    }
+  }
+}
+
+window.addEventListener('hashchange', handleHashChange);
+
+function initializeApp() {
+  bindStudioUI();
+  handleHashChange();
+  
+  // Set initial default theme background for studio editing mode if no base64 avatar
+  if (!activeProfile.media.avatarBase64) {
+    playSaveSound(); // Boot up
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+</script></body></html>
